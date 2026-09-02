@@ -1,0 +1,7 @@
+# SDD/superpowers orchestration scratch (not part of the repo)
+.superpowers/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/

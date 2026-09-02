@@ -9,7 +9,7 @@ description: Use when a pull request has just been merged and the local feature 
 /clean
 ```
 
-Verifies the working branch actually landed, pulls `main`, deletes the branch locally,
+Verifies the working branch actually landed, pulls the default branch, deletes the branch locally,
 prunes stale remote tracking refs.
 
 **Every step that could lose work stops rather than forcing.** Nothing here uses `-D`,
@@ -36,14 +36,28 @@ behalf.
 
 ---
 
-## Step 2 — Record the current branch
+## Step 2 — Detect the default branch, then record the current branch
+
+```bash
+gh repo view --json defaultBranchRef --jq .defaultBranchRef.name
+```
+
+Store as `<default-branch>`. If that fails (no `gh`, no auth, no network), fall back to:
+
+```bash
+git symbolic-ref refs/remotes/origin/HEAD
+```
+
+(strip the `refs/remotes/origin/` prefix to get the branch name). Use `<default-branch>`
+everywhere below — **never hardcode `main`.**
 
 ```bash
 git branch --show-current
 ```
 
-Store as `<current-branch>`. If it is already `main` (or the repo's default branch), there
-is nothing to clean — say so and stop.
+Store as `<current-branch>`. **Empty output means detached HEAD** — stop and report "Not on
+a branch (detached HEAD) — nothing to clean." If `<current-branch>` equals
+`<default-branch>`, there is nothing to clean — say so and stop.
 
 ---
 
@@ -63,15 +77,15 @@ stacked child can show as merged while its base is still open.
 
 ---
 
-## Step 4 — Switch to main and pull
+## Step 4 — Switch to the default branch and pull
 
 ```bash
-git checkout main
-git pull --ff-only origin main
+git checkout <default-branch>
+git pull --ff-only origin <default-branch>
 ```
 
-If `--ff-only` fails, local `main` has diverged. Report the error and stop. **Never force
-pull.**
+If `--ff-only` fails, local `<default-branch>` has diverged. Report the error and stop.
+**Never force pull.**
 
 ---
 
@@ -98,8 +112,8 @@ Capture which refs were pruned.
 
 ## Step 7 — Offer a build-artifact sweep
 
-Only if the project rules name a sweep command (Rust workspaces and Tauri apps accumulate
-fast). **Offer, do not run unasked:**
+Only if the project rules name a sweep command — some toolchains accumulate build
+artifacts fast. **Offer, do not run unasked:**
 
 > `<project sweep command>` would drop stale build artifacts. Run it?
 
@@ -110,6 +124,6 @@ Never suggest a full clean as routine cleanup — it forces a cold rebuild of th
 ## Step 8 — Report
 
 - Deleted branch: `<current-branch>`
-- Now on: `main` at `<git rev-parse --short HEAD>`
+- Now on: `<default-branch>` at `<git rev-parse --short HEAD>`
 - Pruned refs: `<list, or "none">`
 - Swept: `<yes / no / not offered>`

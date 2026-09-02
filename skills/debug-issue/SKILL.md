@@ -5,7 +5,9 @@ description: Use when tracing the cause of a bug, test failure or unexpected beh
 
 # debug-issue
 
-Trace a defect through the code graph instead of grepping for symptoms.
+Trace a defect through the code graph instead of grepping for symptoms. Requires the
+`code-review-graph` MCP server; without it, fall back to Serena's symbol tools, then
+plain file search.
 
 **Note:** for the *discipline* of debugging — reproduce, hypothesise, isolate before fixing —
 use `superpowers:systematic-debugging`. This skill is the navigation half.
@@ -26,6 +28,8 @@ use `superpowers:systematic-debugging`. This skill is the navigation half.
 
 ## Token efficiency
 
-- **Always start with `get_minimal_context(task="<your task>")`** before any other graph tool.
+- **Always start with `get_minimal_context_tool(task="<your task>")`** before any other graph tool.
 - Use `detail_level="minimal"` on every call. Escalate only when minimal is insufficient.
 - Target: ≤5 tool calls, ≤800 total output tokens.
+- Read the implementation and its tests before changing code — the graph narrows scope,
+  it does not replace the source.

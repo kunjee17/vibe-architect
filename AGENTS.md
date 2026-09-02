@@ -21,7 +21,8 @@ Read `superpowers:writing-skills`. In particular:
 | Project rules — placement, schemas, build commands | the repo they describe |
 
 **This repo never encodes project-specific rules.** If a change would only be true in one
-repository, it belongs in that repository's `CLAUDE.md` or its `*-rules` skill.
+repository, it belongs in that repository's own docs, governed by `docs/MANIFEST.md`
+(produced by `/doc-scaffold`) — not in its `CLAUDE.md`.
 
 ## Runtimes
 
@@ -36,3 +37,13 @@ exist everywhere.
 ## Docs
 
 `docs/design.md` · `docs/decisions.md` · `docs/roadmap.md`. Decisions are append-only.
+
+## Running the tests
+
+```bash
+bin/run-tests.py        # stdlib unittest, no pytest needed
+bin/run-tests.py -v     # per-test output
+```
+
+Mechanism (`docsbase/`) is tested. Judgment (`skills/`) is prose and is
+tested by pressure scenarios — see `superpowers:writing-skills`.

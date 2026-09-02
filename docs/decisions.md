@@ -1,3 +1,8 @@
+---
+governs:
+  shapes: [decisions]
+---
+
 # vibe-architect — Decisions
 
 Format: `## Title — YYYY-MM-DD`, then **Decision** / **Context**.
@@ -217,3 +222,23 @@ dependency of `ship`. Roadmap order becomes C → A migration → B. The migrati
 simpler: no rename, Part A moves into `docs/` and the legacy skill is deleted outright.
 
 Full design: `docs/superpowers/specs/2026-09-02-docs-as-baseline-design.md`.
+
+## Specs and plans are tracked, not ignored — 2026-09-02
+
+**Decision**: `docs/superpowers/` is committed; `.superpowers/` is gitignored.
+
+**Context**: established by evidence, not asked — `git ls-files docs/superpowers` returned
+two tracked files, so the practice already existed and `doc-scaffold` followed it. Specs and
+plans are decision records explaining why the code looks the way it does; orchestration
+scratch is disposable. Matches the 3/3 convention in k_lawyer, pi_dx and nyayvaani.
+
+## Learn is the docs, not a skill — 2026-09-02
+
+**Decision**: no Learn skill will be built. Learn is `decisions.md` and the rest of `docs/`,
+kept current by `doc-refresh`.
+
+**Context**: the README lists "nothing gets written down" as one of two measured gaps, which
+framed Learn as a missing capability. Clarified by the author: *"Learn skill is our docs which
+we keep writing — decisions md files etc."* So the gap is a maintenance gap, not a missing
+skill, and `doc-refresh` already owns it. `ship` Stage 5 routes into those docs and needs no
+separate skill behind it.

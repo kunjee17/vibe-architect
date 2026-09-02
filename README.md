@@ -3,9 +3,11 @@
 Portable Claude Code skills for the issue-to-PR pipeline, extracted from the per-project
 `kl-ship` / `pi-ship` / `nv-ship` skills that had drifted into three copies of the same thing.
 
-**Status: v0.1.0 — the ship pipeline is written, not yet proven.** `ship`, `auto` and
-`clean` exist, plus four graph-navigation helpers. Nothing has shipped a real issue through
-them yet, and the local `*-ship` skills are still untouched.
+**Status: v0.2.0 — the pipeline is written and self-hosted, not yet proven.** Docs are the
+rule source: `ship` reads a generated routing manifest and hard-blocks without one. This repo
+has now run `/doc-scaffold` on itself, so it satisfies its own gate. What has *not* happened:
+no real issue has gone from `/ship <n>` to a merged PR, the local `*-ship` skills are still
+untouched, and `ship` has no pressure-tested baseline the way `doc-scaffold` does.
 
 ## Why this exists
 
@@ -38,6 +40,12 @@ claude plugin marketplace add kunjee17/vibe-architect
 claude plugin install vibe-architect@vibe-architect
 ```
 
+> **This installs whatever is on the default branch.** Until the current work merges, that
+> is v0.1.0 — seven skills, no `doc-scaffold`, and a Stage 0 that looks for project rules in
+> a `*-rules` skill and then `CLAUDE.md`. That lookup was measured not to work: no
+> `CLAUDE.md` in the repos this was built from carries a placement table. Everything this
+> README describes is v0.2.0 and lives on `feat/docs-as-baseline` until merged.
+
 Codex and Cursor read `.codex-plugin/` and `.cursor-plugin/` from a clone. Gemini CLI reads
 `gemini-extension.json`. For any runtime with no plugin system, Codex, Copilot CLI and
 Gemini CLI all also read `~/.agents/skills/`:
@@ -47,6 +55,11 @@ git clone https://github.com/kunjee17/vibe-architect ~/src/vibe-architect
 mkdir -p ~/.agents/skills
 ln -s ~/src/vibe-architect/skills/* ~/.agents/skills/
 ```
+
+This symlinks `skills/*` only — `bin/` and `docsbase/` never reach the machine this way.
+`ship` and `doc-scaffold` still need `bin/build-manifest.py` and `bin/derive-facts.py`, so
+on this install path invoke them from the clone directly (`~/src/vibe-architect/bin/...`),
+not `${CLAUDE_PLUGIN_ROOT}`.
 
 **There is no npm package and there should not be one.** Every target runtime already has
 a native installer, so publishing would add a build-and-publish step and a fifth place to
@@ -60,7 +73,8 @@ sets them all.
 |---|---|---|
 | `gh` | **Hard** | Issue fetch, PR creation. Must be authenticated. |
 | `git` | **Hard** | |
-| `obsidian` CLI | **Soft** | `~/.local/bin/obsidian`. Adds graph queries to the second-brain vault but **requires the Obsidian app to be running**. Never architect around it — plain `Grep`/`Read` over `~/Workspace/secondbrain/` works headless and in cron. Not `obs`, which is OBS Studio. |
+| `python3` ≥ 3.11 | **Hard** | Runs `bin/build-manifest.py` and `bin/derive-facts.py`. `ship` Stage 0 hard-blocks without them. 3.11 is the floor because `tomllib` is stdlib from there. |
+| `PyYAML` | **Hard in practice** | Parses `governs:` frontmatter. Import is soft — its absence produces one actionable line, not a traceback — but nothing that reads the manifest works without it. `python3 -m pip install pyyaml` |
 | `superpowers` plugin | **Hard** | These skills compose it rather than reimplement it. Not bundled and not auto-installable — plugin manifests have no dependency field. `ship` checks for it in Stage 0 and tells you which stages degrade without it. Install: `claude plugin install superpowers@claude-plugins-official` |
 | code-review-graph MCP | **Soft** | Structural navigation. Without it, `ship` Stage 1.3 falls back to symbol tools, then grep. The four helper skills need it outright. |
 
@@ -105,15 +119,23 @@ byte-identical between pi_dx and k_lawyer apart from a five-line token-efficienc
 
 ## Where project rules come from
 
-`ship` carries no project rules. Stage 0 loads them from the repo you are standing in,
-taking the first that exists:
+`ship` carries no project rules. Stage 0 reads `docs/MANIFEST.md` — generated
+from each doc's `governs:` frontmatter — and routes the change to the docs
+that govern it.
 
-1. `.claude/skills/*-rules/SKILL.md` — a rules-only project skill
-2. `CLAUDE.md` / `AGENTS.md` at the repo root, plus nested ones for touched directories
-3. Neither → stop and ask
+**There is no fallback.** With no manifest, `ship` and `auto` stop and hand
+off to `/doc-scaffold`. Project rules were measured to be missing from every
+`CLAUDE.md` they were supposed to live in, so a degraded mode would only
+guess more confidently.
 
-So migration is: rename `kl-ship` → `kl-rules`, delete its Part B, keep Part A. Until then
-the `CLAUDE.md` fallback means `ship` works in every repo today with no changes.
+```bash
+/doc-scaffold                                     # once per repo: derive, ask, generate
+${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py         # regenerate after editing a doc's governs: block
+${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py --check # drift gate, belongs in CI
+```
+
+`${CLAUDE_PLUGIN_ROOT}` is set by the plugin runtime to this plugin's installed location.
+Running from a clone of this repo instead, the plain `bin/` path works.
 
 ## Other runtimes
 

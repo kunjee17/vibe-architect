@@ -5,7 +5,13 @@ description: Use when assessing a diff, branch or pull request for risk and test
 
 # review-changes
 
-A risk-aware review driven by change detection and blast radius.
+A risk-aware review driven by change detection and blast radius. Requires the
+`code-review-graph` MCP server; without it, fall back to Serena's symbol tools, then
+plain file search.
+
+**Note:** this skill is graph-based risk and coverage triage; `superpowers:requesting-code-review`
+and this plugin's `code-review` skill are the fresh-eyes review passes. They compose
+rather than compete.
 
 ## Steps
 
@@ -29,6 +35,8 @@ code comment is a note, not a finding.
 
 ## Token efficiency
 
-- **Always start with `get_minimal_context(task="<your task>")`** before any other graph tool.
+- **Always start with `get_minimal_context_tool(task="<your task>")`** before any other graph tool.
 - Use `detail_level="minimal"` on every call. Escalate only when minimal is insufficient.
 - Target: ≤5 tool calls, ≤800 total output tokens.
+- Read the implementation and its tests before changing code — the graph narrows scope,
+  it does not replace the source.

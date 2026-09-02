@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """Report what can be derived about this repo, and what cannot.
 
-Usage (from an installed plugin, ${CLAUDE_PLUGIN_ROOT} is set by the runtime;
-from a clone of this repo, the plain bin/ path below works unchanged):
+Invoke by absolute path; the working directory decides which repo is read.
+${CLAUDE_PLUGIN_ROOT} is set by the plugin runtime. From a clone, use the
+clone's absolute path -- do not cd into the clone to run it against another
+repo, or you will operate on the clone's own docs instead.
+
+Usage:
     ${CLAUDE_PLUGIN_ROOT}/bin/derive-facts.py [path]
 """
 from __future__ import annotations

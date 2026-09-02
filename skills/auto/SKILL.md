@@ -20,9 +20,16 @@ when the queue empties, where `/loop` would keep firing at an empty backlog.
 
 ## Step 0 — Precondition
 
-`auto` hands to `ship`, which requires a docs manifest. If `docs/MANIFEST.md`
-is absent, stop and say: "No docs manifest — run `/doc-scaffold` before
-picking an issue." Do not rank issues you cannot then ship.
+`auto` hands to `ship`, which requires a current docs manifest. Run the same check `ship`
+Stage 0.2 runs:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py --check
+```
+
+Anything other than "current" — absent, empty, stale (DRIFT), no `docs/` directory, or a
+malformed-frontmatter `error:` — **stop.** See `ship` Stage 0.2 for the exact remedy per
+result; do not restate its table here. Do not rank issues you cannot then ship.
 
 ## Step 1 — List open unassigned issues
 
@@ -36,8 +43,9 @@ remote is ambiguous.
 
 **Drop every issue with a non-empty `assignees`.** Someone already has it.
 
-Then check the docs routed by `docs/MANIFEST.md`, or `CLAUDE.md`, for an **execution
-map** — a pinned tracking issue or a playbook doc that sequences the work. If one exists,
+Then ask the user: does a pinned tracking issue or a playbook doc sequence this backlog?
+The manifest's `governs:` schema (`paths`, `shapes`, `verify`) has no field for this, so
+there is no mechanical way to find one — ask rather than search for it. If they name one,
 read it before ranking. **Sequence beats convenience**: an issue that unblocks the current
 milestone outranks a smaller one that does not.
 
@@ -69,6 +77,11 @@ Infer 1–4 from title plus body:
 | 3 | Cross-package or cross-crate, or a design decision is still open, or the body lists unknowns. |
 | 4 | Schema change, new module or crate, architecture work, multi-app. |
 
+Score from the issue text alone — ranking happens before `ship`'s Stage 1.3 codebase
+exploration, so do not go digging through the repo to judge one. When the text is too thin
+to judge, say so in the Notes column instead of guessing; an unrankable issue is a signal,
+not something to score anyway.
+
 Mark inferred scores `(inferred)` in the output.
 
 **Never auto-pick a 4.** Surface it and let the user decide — that is design territory, and
@@ -79,7 +92,9 @@ it wants `superpowers:brainstorming` before it wants `/ship`.
 `priority:p0-critical` → 0, `p1-high` → 1, `p2-medium` → 2, `p3-low` → 3, unlabelled → 2.
 
 Sort ascending by **(complexity, priority)**. With `--quick`, additionally drop anything
-scoring above 2 and anything whose body names a blocker.
+scoring above 2 and anything whose body **names a blocker** — an explicit dependency on
+another issue or on unmerged work, or an open question the body says must be answered
+before work can start.
 
 ---
 
@@ -112,4 +127,5 @@ The Notes column justifies the score in one phrase — especially for inferred o
   stop. Do not widen the filters unasked.
 - **Everything scores 4** — report that and recommend brainstorming the top one rather than
   shipping it.
-- **The execution map contradicts the complexity ranking** — the map wins. Say so in Notes.
+- **The tracking issue or playbook contradicts the complexity ranking** — it wins. Say so
+  in Notes.

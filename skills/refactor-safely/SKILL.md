@@ -6,13 +6,16 @@ description: Use when renaming a symbol across a codebase, removing dead code, o
 # refactor-safely
 
 Plan and execute refactors from dependency analysis, not from search-and-replace.
+Requires the `code-review-graph` MCP server; without it, fall back to Serena's symbol
+tools, then plain file search.
 
 ## Steps
 
 1. `refactor_tool` with `mode="suggest"` — community-driven refactoring candidates.
 2. `refactor_tool` with `mode="dead_code"` — unreferenced code.
 3. For renames, `refactor_tool` with `mode="rename"` to **preview** every affected location.
-4. `apply_refactor_tool` with the `refactor_id` to apply.
+4. `apply_refactor_tool` with the `refactor_id` and `dry_run=True` first — review the
+   diff it returns. Only then call it again with `dry_run=False` to actually apply.
 5. `detect_changes_tool` afterwards to verify the impact matched the preview.
 
 ## Safety checks
@@ -26,6 +29,8 @@ Plan and execute refactors from dependency analysis, not from search-and-replace
 
 ## Token efficiency
 
-- **Always start with `get_minimal_context(task="<your task>")`** before any other graph tool.
+- **Always start with `get_minimal_context_tool(task="<your task>")`** before any other graph tool.
 - Use `detail_level="minimal"` on every call. Escalate only when minimal is insufficient.
 - Target: ≤5 tool calls, ≤800 total output tokens.
+- Read the implementation and its tests before changing code — the graph narrows scope,
+  it does not replace the source.

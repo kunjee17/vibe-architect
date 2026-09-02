@@ -40,12 +40,6 @@ claude plugin marketplace add kunjee17/vibe-architect
 claude plugin install vibe-architect@vibe-architect
 ```
 
-> **This installs whatever is on the default branch.** Until the current work merges, that
-> is v0.1.0 — seven skills, no `doc-scaffold`, and a Stage 0 that looks for project rules in
-> a `*-rules` skill and then `CLAUDE.md`. That lookup was measured not to work: no
-> `CLAUDE.md` in the repos this was built from carries a placement table. Everything this
-> README describes is v0.2.0 and lives on `feat/docs-as-baseline` until merged.
-
 Codex and Cursor read `.codex-plugin/` and `.cursor-plugin/` from a clone. Gemini CLI reads
 `gemini-extension.json`. For any runtime with no plugin system, Codex, Copilot CLI and
 Gemini CLI all also read `~/.agents/skills/`:

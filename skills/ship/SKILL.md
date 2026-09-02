@@ -44,7 +44,7 @@ file, a plan, or time pressure.
 
 ---
 
-## Stage 0 — Preflight, then load the project rules
+## Stage 0 — Preflight, then load the docs manifest
 
 ### 0.1 Check what is available
 
@@ -71,15 +71,21 @@ explicit go-ahead before continuing.
 
 ### 0.2 Load the docs manifest
 
+`${CLAUDE_PLUGIN_ROOT}` is set by the plugin runtime to this plugin's installed
+location; running from a clone of this repo instead, the plain `bin/` path works.
+
 ```bash
 cat docs/MANIFEST.md
-bin/build-manifest.py --check
+${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py --check
 ```
 
 | Result | Action |
 |---|---|
-| No `docs/MANIFEST.md` | **STOP.** "No docs manifest. Run `/doc-scaffold` first." |
-| `--check` reports DRIFT | **STOP.** "Manifest is stale. Run `bin/build-manifest.py`." |
+| No `docs/MANIFEST.md` (manifest absent) | **STOP.** "No docs manifest. Run `/doc-scaffold` first." |
+| Manifest present but no entry carries `governs:` frontmatter (empty) | **STOP.** "Manifest is empty — no doc governs anything yet. Run `/doc-scaffold`." |
+| `--check` reports DRIFT (stale) | **STOP.** "Manifest is stale. Run `${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py`." |
+| `no docs/ directory here` | **STOP.** "No `docs/` directory. Run `/doc-scaffold` first." |
+| `error:` — malformed `governs:` frontmatter | **STOP.** Fix the doc's frontmatter, then re-run `--check`. |
 | Current | Proceed to 0.3 |
 
 **There is no degraded mode.** Do not fall back to `CLAUDE.md`, do not infer

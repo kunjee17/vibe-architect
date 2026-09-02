@@ -3,9 +3,10 @@
 Portable Claude Code skills for the issue-to-PR pipeline, extracted from the per-project
 `kl-ship` / `pi-ship` / `nv-ship` skills that had drifted into three copies of the same thing.
 
-**Status: v0.1.0 — the ship pipeline is written, not yet proven.** `ship`, `auto` and
-`clean` exist, plus four graph-navigation helpers. Nothing has shipped a real issue through
-them yet, and the local `*-ship` skills are still untouched.
+**Status: v0.2.0 — docs are now the rule source, and `ship` hard-blocks without a
+manifest.** `ship`, `auto` and `clean` exist, plus four graph-navigation helpers and
+`doc-scaffold`. The pipeline has not yet been run end-to-end on a real issue, and this
+repo has not yet run `/doc-scaffold` on itself.
 
 ## Why this exists
 
@@ -47,6 +48,11 @@ git clone https://github.com/kunjee17/vibe-architect ~/src/vibe-architect
 mkdir -p ~/.agents/skills
 ln -s ~/src/vibe-architect/skills/* ~/.agents/skills/
 ```
+
+This symlinks `skills/*` only — `bin/` and `docsbase/` never reach the machine this way.
+`ship` and `doc-scaffold` still need `bin/build-manifest.py` and `bin/derive-facts.py`, so
+on this install path invoke them from the clone directly (`~/src/vibe-architect/bin/...`),
+not `${CLAUDE_PLUGIN_ROOT}`.
 
 **There is no npm package and there should not be one.** Every target runtime already has
 a native installer, so publishing would add a build-and-publish step and a fifth place to
@@ -115,10 +121,13 @@ off to `/doc-scaffold`. Project rules were measured to be missing from every
 guess more confidently.
 
 ```bash
-/doc-scaffold           # once per repo: derive, ask, generate
-bin/build-manifest.py   # regenerate after editing a doc's governs: block
-bin/build-manifest.py --check   # drift gate, belongs in CI
+/doc-scaffold                                     # once per repo: derive, ask, generate
+${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py         # regenerate after editing a doc's governs: block
+${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py --check # drift gate, belongs in CI
 ```
+
+`${CLAUDE_PLUGIN_ROOT}` is set by the plugin runtime to this plugin's installed location.
+Running from a clone of this repo instead, the plain `bin/` path works.
 
 ## Other runtimes
 

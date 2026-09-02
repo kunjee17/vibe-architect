@@ -72,6 +72,17 @@ class TestDerive(unittest.TestCase):
             values = {f.value for f in facts if f.question == "gate-commands"}
             self.assertEqual(values, {"check", "build"})
 
+    def test_a_bare_git_repo_does_not_answer_pre_commit_automation(self):
+        import subprocess
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            facts, underived = detect.derive(root)
+            hooks = [f for f in facts
+                     if f.question == "pre-commit-automation"]
+            self.assertEqual(hooks, [])
+            self.assertIn("pre-commit-automation", underived)
+
     def test_toml_list_extracts_real_workspace_members(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)

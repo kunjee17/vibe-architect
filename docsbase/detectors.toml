@@ -26,10 +26,10 @@ question = "pre-commit-automation"
 when = "lefthook.yml"
 extract = "glob-names"
 
-[[detector]]
-question = "pre-commit-automation"
-when = ".git/hooks/*"
-extract = "glob-names"
+# No detector on .git/hooks/* — deliberately absent. .git/ is untracked,
+# machine-local state (git installs *.sample hooks in every repo whether or
+# not anyone wired them up), never a project convention worth recording.
+# Do not re-add it.
 
 [[detector]]
 question = "gate-commands"
@@ -52,7 +52,8 @@ pattern = "^([a-zA-Z][a-zA-Z0-9_-]*):"
 [[detector]]
 question = "gate-commands"
 when = "Taskfile.yml"
-extract = "glob-names"
+extract = "line-prefix"
+pattern = "^  ([a-zA-Z][A-Za-z0-9_:-]*):"
 
 [[detector]]
 question = "units"

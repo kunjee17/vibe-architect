@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Generate docs/MANIFEST.md from each doc's `governs:` frontmatter.
 
-Usage:
-    bin/build-manifest.py           write the manifest
-    bin/build-manifest.py --check   exit 1 if it is out of date
+Usage (from an installed plugin, ${CLAUDE_PLUGIN_ROOT} is set by the runtime;
+from a clone of this repo, the plain bin/ path below works unchanged):
+    ${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py           write the manifest
+    ${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py --check   exit 1 if it is out of date
 """
 from __future__ import annotations
 
@@ -32,6 +33,19 @@ def check(root: pathlib.Path) -> bool:
     return target.read_text() == build(root)
 
 
+def state(root: pathlib.Path) -> str:
+    """One of: "absent", "empty", "stale", "current"."""
+    target = root / MANIFEST
+    if not target.exists():
+        return "absent"
+    current = build(root)
+    if target.read_text() != current:
+        return "stale"
+    if not manifest.collect(root / "docs"):
+        return "empty"
+    return "current"
+
+
 def main(argv: list[str]) -> int:
     root = pathlib.Path.cwd()
     if not (root / "docs").is_dir():
@@ -39,9 +53,23 @@ def main(argv: list[str]) -> int:
         return 1
     try:
         if "--check" in argv:
-            if check(root):
+            result = state(root)
+            if result == "current":
                 print("ok - manifest is current")
                 return 0
+            if result == "absent":
+                print(
+                    "ABSENT - no docs/MANIFEST.md. Run /doc-scaffold",
+                    file=sys.stderr,
+                )
+                return 1
+            if result == "empty":
+                print(
+                    "EMPTY - docs/MANIFEST.md exists but no doc carries "
+                    "governs: frontmatter. Run /doc-scaffold",
+                    file=sys.stderr,
+                )
+                return 1
             print(
                 "DRIFT - docs/MANIFEST.md is out of date. "
                 "Run bin/build-manifest.py",

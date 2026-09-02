@@ -19,8 +19,11 @@ The run ends with these four in place:
 
 ## Step 1 — Derive
 
+`${CLAUDE_PLUGIN_ROOT}` is set by the plugin runtime to this plugin's installed
+location; running from a clone of this repo instead, the plain `bin/` path works.
+
 ```bash
-bin/derive-facts.py
+${CLAUDE_PLUGIN_ROOT}/bin/derive-facts.py
 ```
 
 Read what it found and, just as carefully, what it lists as UNDERIVED. Every fact it
@@ -103,8 +106,8 @@ above.
 ## Step 5 — Generate and verify
 
 ```bash
-bin/build-manifest.py
-bin/build-manifest.py --check
+${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py
+${CLAUDE_PLUGIN_ROOT}/bin/build-manifest.py --check
 ```
 
 Report the manifest, and say plainly which sections read "not recorded".

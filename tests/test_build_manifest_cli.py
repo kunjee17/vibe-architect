@@ -50,6 +50,34 @@ class TestCli(unittest.TestCase):
             root = self._repo(tmp)
             self.assertFalse(build_manifest.check(root))
 
+    def test_state_absent_when_no_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self.assertEqual(build_manifest.state(root), "absent")
+
+    def test_state_empty_when_no_doc_carries_governs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / "docs").mkdir()
+            (root / "docs" / "vision.md").write_text("# Vision\n")
+            build_manifest.write(root)
+            self.assertEqual(build_manifest.state(root), "empty")
+
+    def test_state_stale_when_a_doc_changed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            build_manifest.write(root)
+            (root / "docs" / "design.md").write_text(
+                "---\ngoverns:\n  paths: [ui/**]\n---\n# D\n"
+            )
+            self.assertEqual(build_manifest.state(root), "stale")
+
+    def test_state_current_when_matching_and_non_empty(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            build_manifest.write(root)
+            self.assertEqual(build_manifest.state(root), "current")
+
     def test_malformed_frontmatter_reports_one_line_not_a_traceback(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)

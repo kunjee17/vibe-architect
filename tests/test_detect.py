@@ -59,6 +59,30 @@ class TestDerive(unittest.TestCase):
                 self.assertTrue(f.source)
                 self.assertTrue((root / f.source.split(":")[0]).exists())
 
+    def test_every_shipped_detector_names_a_known_extract_kind(self):
+        known = {"glob-names", "json-keys", "line-prefix", "toml-list"}
+        for row in detect.load_table():
+            self.assertIn(row["extract"], known)
+
+    def test_line_prefix_extracts_the_captured_value(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / "Justfile").write_text("check:\n\techo hi\nbuild:\n\techo b\n")
+            facts, _ = detect.derive(root)
+            values = {f.value for f in facts if f.question == "gate-commands"}
+            self.assertEqual(values, {"check", "build"})
+
+    def test_toml_list_extracts_real_workspace_members(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / "Cargo.toml").write_text(
+                '[workspace]\nmembers = ["libs/a", "apps/b"]\n'
+            )
+            facts, underived = detect.derive(root)
+            values = {f.value for f in facts if f.question == "units"}
+            self.assertEqual(values, {"libs/a", "apps/b"})
+            self.assertNotIn("units", underived)
+
 
 if __name__ == "__main__":
     unittest.main()

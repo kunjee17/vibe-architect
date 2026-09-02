@@ -9,6 +9,7 @@
 #   "glob-names"  file names matched by `when`
 #   "json-keys"   keys at `pointer` in a JSON file
 #   "line-prefix" lines in `when` matching `pattern`, first capture group
+#   "toml-list"   list values at `pointer` (dot-separated path) in TOML file
 
 [[detector]]
 question = "pre-commit-automation"
@@ -56,22 +57,26 @@ extract = "glob-names"
 [[detector]]
 question = "units"
 when = "pnpm-workspace.yaml"
-extract = "glob-names"
+extract = "line-prefix"
+pattern = "^\\s*-\\s*[\"']?([^\"'\\s]+)[\"']?\\s*$"
 
 [[detector]]
 question = "units"
 when = "Cargo.toml"
-extract = "glob-names"
+extract = "toml-list"
+pointer = "workspace.members"
 
 [[detector]]
 question = "units"
 when = "go.work"
-extract = "glob-names"
+extract = "line-prefix"
+pattern = "^\\s*(?:use\\s+)?\\.?/?([A-Za-z0-9_./-]+)\\s*$"
 
 [[detector]]
 question = "units"
 when = "settings.gradle"
-extract = "glob-names"
+extract = "line-prefix"
+pattern = "^\\s*include\\s+['\"]:?([A-Za-z0-9_.:-]+)['\"]"
 
 [[detector]]
 question = "dependency-manifests"

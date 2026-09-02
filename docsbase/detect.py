@@ -65,6 +65,23 @@ def _extract(root: pathlib.Path, row: dict) -> list[Fact]:
                 Fact(row["question"], m.group(1), rel)
                 for m in pattern.finditer(text)
             ]
+        elif kind == "toml-list":
+            try:
+                data = tomllib.loads(path.read_text())
+            except (tomllib.TOMLDecodeError, OSError):
+                continue  # unreadable: report nothing rather than guess
+            node = data
+            for part in row["pointer"].split("."):
+                if not isinstance(node, dict):
+                    node = None
+                    break
+                node = node.get(part)
+            if isinstance(node, list):
+                out += [Fact(row["question"], str(v), rel) for v in node]
+        else:
+            raise ValueError(
+                f"unknown extract kind {kind!r} in detectors.toml"
+            )
     return out
 
 

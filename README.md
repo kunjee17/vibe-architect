@@ -3,10 +3,11 @@
 Portable Claude Code skills for the issue-to-PR pipeline, extracted from the per-project
 `kl-ship` / `pi-ship` / `nv-ship` skills that had drifted into three copies of the same thing.
 
-**Status: v0.2.0 — docs are now the rule source, and `ship` hard-blocks without a
-manifest.** `ship`, `auto` and `clean` exist, plus four graph-navigation helpers and
-`doc-scaffold`. The pipeline has not yet been run end-to-end on a real issue, and this
-repo has not yet run `/doc-scaffold` on itself.
+**Status: v0.2.0 — the pipeline is written and self-hosted, not yet proven.** Docs are the
+rule source: `ship` reads a generated routing manifest and hard-blocks without one. This repo
+has now run `/doc-scaffold` on itself, so it satisfies its own gate. What has *not* happened:
+no real issue has gone from `/ship <n>` to a merged PR, the local `*-ship` skills are still
+untouched, and `ship` has no pressure-tested baseline the way `doc-scaffold` does.
 
 ## Why this exists
 

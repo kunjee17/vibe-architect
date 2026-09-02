@@ -43,6 +43,21 @@ class TestRoute(unittest.TestCase):
         hits = manifest.route(self.entries, ["libs/domain/a/b/c/d.rs"], [])
         self.assertEqual([e.path for e in hits], ["docs/architecture.md"])
 
+    def test_bare_directory_pattern_matches_its_contents(self):
+        entries = [manifest.Entry("docs/a.md", _g(paths=["libs/domain"]))]
+        hits = manifest.route(entries, ["libs/domain/x.rs"], [])
+        self.assertEqual([e.path for e in hits], ["docs/a.md"])
+
+    def test_bare_directory_pattern_does_not_match_a_sibling(self):
+        entries = [manifest.Entry("docs/a.md", _g(paths=["libs/domain"]))]
+        hits = manifest.route(entries, ["libs/domain-other/x.rs"], [])
+        self.assertEqual(hits, [])
+
+    def test_glob_pattern_does_not_match_a_sibling_prefix(self):
+        entries = [manifest.Entry("docs/a.md", _g(paths=["docs/product"]))]
+        hits = manifest.route(entries, ["docs/product-archive/old.md"], [])
+        self.assertEqual(hits, [])
+
 
 class TestCollectAndRender(unittest.TestCase):
     def test_collect_skips_non_authoritative_docs(self):

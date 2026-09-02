@@ -28,14 +28,17 @@ def collect(docs_dir: pathlib.Path) -> list[Entry]:
 
 
 def _matches(pattern: str, touched: str) -> bool:
-    """Glob match where `**` spans directory separators.
+    """Glob match where `*` already spans directory separators.
 
-    fnmatch already treats `*` as crossing `/`, so `libs/domain/**` matches
-    `libs/domain/a/b/c.rs`. Normalising a trailing `**` to `*` keeps a bare
-    `libs/domain/**` matching the directory's direct children too.
+    fnmatch treats `*` as crossing `/`, so `libs/domain/**` and
+    `libs/domain/*` are equivalent and both match `libs/domain/a/b/c.rs`.
+    The second call exists only for a pattern written as a bare directory
+    name with no glob suffix: `libs/domain` should match everything under
+    `libs/domain/`, but must NOT match the sibling `libs/domain-other/`.
+    Appending `/*` rather than `*` is what enforces that boundary.
     """
     return fnmatch.fnmatchcase(touched, pattern) or fnmatch.fnmatchcase(
-        touched, pattern.rstrip("*") + "*"
+        touched, pattern.rstrip("/*") + "/*"
     )
 
 

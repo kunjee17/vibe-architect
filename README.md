@@ -40,6 +40,12 @@ claude plugin marketplace add kunjee17/vibe-architect
 claude plugin install vibe-architect@vibe-architect
 ```
 
+> **This installs whatever is on the default branch.** Until the current work merges, that
+> is v0.1.0 — seven skills, no `doc-scaffold`, and a Stage 0 that looks for project rules in
+> a `*-rules` skill and then `CLAUDE.md`. That lookup was measured not to work: no
+> `CLAUDE.md` in the repos this was built from carries a placement table. Everything this
+> README describes is v0.2.0 and lives on `feat/docs-as-baseline` until merged.
+
 Codex and Cursor read `.codex-plugin/` and `.cursor-plugin/` from a clone. Gemini CLI reads
 `gemini-extension.json`. For any runtime with no plugin system, Codex, Copilot CLI and
 Gemini CLI all also read `~/.agents/skills/`:
@@ -67,7 +73,8 @@ sets them all.
 |---|---|---|
 | `gh` | **Hard** | Issue fetch, PR creation. Must be authenticated. |
 | `git` | **Hard** | |
-| `obsidian` CLI | **Soft** | `~/.local/bin/obsidian`. Adds graph queries to the second-brain vault but **requires the Obsidian app to be running**. Never architect around it — plain `Grep`/`Read` over `~/Workspace/secondbrain/` works headless and in cron. Not `obs`, which is OBS Studio. |
+| `python3` ≥ 3.11 | **Hard** | Runs `bin/build-manifest.py` and `bin/derive-facts.py`. `ship` Stage 0 hard-blocks without them. 3.11 is the floor because `tomllib` is stdlib from there. |
+| `PyYAML` | **Hard in practice** | Parses `governs:` frontmatter. Import is soft — its absence produces one actionable line, not a traceback — but nothing that reads the manifest works without it. `python3 -m pip install pyyaml` |
 | `superpowers` plugin | **Hard** | These skills compose it rather than reimplement it. Not bundled and not auto-installable — plugin manifests have no dependency field. `ship` checks for it in Stage 0 and tells you which stages degrade without it. Install: `claude plugin install superpowers@claude-plugins-official` |
 | code-review-graph MCP | **Soft** | Structural navigation. Without it, `ship` Stage 1.3 falls back to symbol tools, then grep. The four helper skills need it outright. |
 

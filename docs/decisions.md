@@ -189,3 +189,31 @@ zero-manifest install path.
 
 Untested on any runtime other than Claude Code. The manifests are written from the shapes
 superpowers ships, not from a passing install.
+
+## Project rules live in docs, not a rules skill — 2026-09-02
+
+**Decision**: supersedes "Project rules load by lookup order, not by a fixed home" from
+earlier the same day. `ship` Stage 0 reads a generated routing manifest over the project's
+`docs/`, and hard-blocks when there is none. The `*-rules` skill is dropped.
+
+**Context**: the earlier decision assumed the `CLAUDE.md` fallback would carry the load until
+each repo migrated. Measured afterwards: **no `CLAUDE.md` in any of the three repos contains
+a placement table**, and two say outright that they deliberately do not — k_lawyer's calls
+itself "orientation and traps only" and defers the migration commands to `kl-ship`. So the
+fallback reaches Stage 2.2 with nothing to fill Placement from.
+
+Two deeper reasons emerged, neither fixed by a better fallback. **Part A is not skill-shaped**
+— an apps table, placement, database topology, commands — it is `architecture.md` in a
+skill's clothes, and it lives in a skill only because skills auto-load. And **`ship` was
+reading and writing different artifacts**: Stage 5 writes project docs while Stage 0 read a
+rules skill, which guarantees the drift this repo exists to remove.
+
+Field evidence for docs over a skill: pi_dx carries 131 doc files and its docs have
+repeatedly caught misdirected agents. `pi-ship` already does selective doc loading by change
+shape in its review gate — the mechanism was proven, just never the baseline.
+
+**Consequence**: `doc-scaffold` is promoted from the cheap Group C afterthought to a
+dependency of `ship`. Roadmap order becomes C → A migration → B. The migration also gets
+simpler: no rename, Part A moves into `docs/` and the legacy skill is deleted outright.
+
+Full design: `docs/superpowers/specs/2026-09-02-docs-as-baseline-design.md`.

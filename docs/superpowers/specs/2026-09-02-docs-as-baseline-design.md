@@ -104,6 +104,21 @@ in the project's build gate.
 hatch for narrative docs — a vision statement, a business one-pager — which should not bind
 a code change.
 
+### Optional `status:`
+
+```markdown
+---
+governs: {...}
+status: stale — cost basis changed; derived numbers are provisional
+---
+```
+
+Free text. The manifest surfaces it, and `ship` Stage 0.4 reports it when routing to that
+doc rather than presenting it as current. This formalises a habit already in use: two of
+pi_dx's five product docs open with a hand-written staleness banner. It promotes that from
+prose an agent may skim to a field it cannot miss. Optional — an absent `status:` means
+nothing is claimed, not that the doc is verified.
+
 ### Cost, stated
 
 Stage 0 reads only the manifest, which is tens of lines. Individual docs are pulled per
@@ -165,6 +180,20 @@ Required core, because the manifest and `ship` depend on them:
 - `docs/decisions.md` — the ADR log
 - `docs/architecture.md` — carries the placement table. The name is fixed, because Stage 0
   needs a required doc it can demand by path when routing has not been established yet.
+- `docs/product.md` — why this exists, who it is for, what is explicitly out of scope
+
+**Why `product.md` is required rather than offered.** Architecture is derived from
+requirements, and an agent without product context makes locally-correct, globally-wrong
+choices with full confidence. Two rules in these repos are unreadable from the code and come
+straight out of product context: *"filter by a domain concept, never `tenant_id`"* derives
+from pi_dx's three audiences, and k_lawyer's Labs gate on `planStatus` rather than `planType`
+exists only because of the pricing model. All three repos already carry this content
+independently — pi_dx in `business/`, k_lawyer as a "Product identity" section, nyayvaani as
+`docs/NYAYVAANI.md`.
+
+What does **not** generalise is the packaging. `pricing.md` and `brand-and-site.md` inside a
+code repo is a solo-founder shape; in a larger org they live in a product tool, and an OSS
+library has neither. So the *doc* is required and short; the *splits* stay offered.
 
 Everything else is **offered from what was detected**, never scaffolded by default:
 
@@ -173,6 +202,8 @@ Everything else is **offered from what was detected**, never scaffolded by defau
 | more than one buildable unit | `docs/<units>/<name>.md` |
 | deploy or infra config | `docs/ops/` |
 | a public-facing surface | `docs/design.md` |
+| billing, licensing or entitlement code | `docs/product/pricing.md` |
+| a published API surface | `docs/product/api-spec.md` |
 
 pi_dx's full layout — including `business/` — is one repo's structure and is not the
 template.
@@ -198,13 +229,26 @@ whether the repo is public and the plans discuss unreleased work.
 Runs **on a schedule** (`/loop`, `/schedule`, or by hand). Docs exist; the job is keeping
 them true and getting what was learned written down.
 
+Docs split into two classes, and conflating them produces a false all-clear:
+
+| Class | Example | How it is checked |
+|---|---|---|
+| **Derivable** | architecture, placement, commands, units | against the source tree |
+| **Always-ask** | product, pricing, audiences, roadmap intent | by asking; **never derivable** |
+
+No detector will ever discover that a pricing model is stale — the world changed, not the
+code. So `doc-refresh` must never report "no drift" for an always-ask doc. It reports
+*"unverifiable from source — last confirmed <date>"* and asks.
+
 1. Re-derive facts from the source tree.
-2. Diff against what the docs claim. Report **contradictions first** — these are why the
-   skill exists.
+2. Diff against what the derivable docs claim. Report **contradictions first** — these are
+   why the skill exists.
 3. Regenerate the manifest; report routing that now points nowhere.
-4. Ask about direction: what changed in intent since the last run, what decision was made
+4. For every always-ask doc, report when it was last confirmed and ask whether it still
+   holds. Never mark one verified without an answer.
+5. Ask about direction: what changed in intent since the last run, what decision was made
    that is not in `decisions.md`, what is now deferred or abandoned.
-5. Propose edits. **Never write unattended** — the same user-triggered constraint as Stage 5.
+6. Propose edits. **Never write unattended** — the same user-triggered constraint as Stage 5.
 
 Separate from `doc-scaffold` because the triggers are unrelated and each needs a clean
 "Use when" description. A two-job skill drifts into summarizing its own workflow in the

@@ -123,3 +123,69 @@ been tried and has not worked — hence a gate.
 **Context**: personal constraint, already promoted to the second-brain vault as
 `atman/no-git-worktrees`. Recorded here so the pipeline enforces it rather than relying on the
 vault being read first.
+
+## Project rules load by lookup order, not by a fixed home — 2026-09-02
+
+**Decision**: `ship` Stage 0 loads project rules from the first of: a `*-rules` skill in
+`.claude/skills/`, then the repo's `CLAUDE.md`/`AGENTS.md`, then stop and ask.
+
+**Context**: this was the open question deferred in `roadmap.md` — where Part A lands after
+migration. It could not stay deferred: a global `ship` needs *some* contract for finding
+placement tables, database topology and build commands on day one.
+
+A lookup order settles it without forcing a migration. The `CLAUDE.md` fallback means `ship`
+runs in every repo today with zero changes. When a repo is ready, `kl-ship` becomes
+`kl-rules` — Part A kept, Part B deleted — and the first branch of the lookup picks it up.
+
+Rejected: **CLAUDE.md only**, because it would push ~250 lines of ship-time rules into a file
+that loads on every session whether or not anything is being shipped. Rejected: **a fixed
+data file** (`.claude/project-rules.md`), because nothing outside `ship` would load it, so the
+rules would stop applying to ordinary non-shipping work.
+
+## Four graph helper skills fold in too — 2026-09-02
+
+**Decision**: `explore-codebase`, `debug-issue`, `review-changes` and `refactor-safely` move
+into this plugin alongside the ship pipeline.
+
+**Context**: not in the original survey. They exist in both pi_dx and k_lawyer and are
+byte-identical apart from a five-line token-efficiency block pi_dx added. They contain no
+project content at all — they are code-review-graph boilerplate. Merging them was a copy plus
+a frontmatter fix (the originals used `name: Explore Codebase`, with spaces and capitals,
+which the skill spec does not allow).
+
+Cost was near zero and it empties the duplicated set in both repos in one pass rather than
+leaving a second migration to remember.
+
+## superpowers stays a documented prerequisite, not a vendored copy — 2026-09-02
+
+**Decision**: do not bundle or vendor any superpowers skill. `ship` Stage 0.1 checks for the
+plugin, names the stages that degrade without it, and asks before continuing.
+
+**Context**: Claude Code plugin manifests have **no dependency field** — checked across every
+installed plugin, the accepted keys are name, description, version, author, homepage,
+repository, license, keywords, commands, skills, mcpServers, userConfig. So there is no
+auto-install to declare.
+
+Copying the four composed skills in would reintroduce exactly the drift this repo exists to
+remove, one level up. A loud preflight is the cheaper failure mode than silently skipping a
+stage.
+
+**Consequence**: the TDD gate is written **inline in `ship`**, not delegated. It is the one
+piece that must bind even when the plugin is absent, since it is the measured gap the whole
+design turns on.
+
+## The plugin ships for Codex, Cursor and Gemini too — 2026-09-02
+
+**Decision**: carry `.codex-plugin/`, `.cursor-plugin/` and `gemini-extension.json` beside
+`.claude-plugin/`, all pointing at the same `skills/` directory.
+
+**Context**: three extra manifests and an `AGENTS.md`. The real cost is a writing constraint,
+not a packaging one: **skill bodies name MCP tools and CLI commands, never a specific
+harness's built-in tools.** `gh`, `git`, `semantic_search_nodes_tool` and `find_symbol` exist
+everywhere; a named Grep/Read tool does not.
+
+Codex, Copilot CLI and Gemini CLI additionally read `~/.agents/skills/`, so a symlink is a
+zero-manifest install path.
+
+Untested on any runtime other than Claude Code. The manifests are written from the shapes
+superpowers ships, not from a passing install.

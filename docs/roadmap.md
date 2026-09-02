@@ -44,14 +44,20 @@ independent of the Learn routing question.
 
 ## Open questions
 
-1. **Where Part A lands after migration.** Rules-only per-project skill, the repo's CLAUDE.md,
-   or a plain data file the global skill reads. Deferred until `ship` proves out — see
-   `decisions.md`.
+1. ~~**Where Part A lands after migration.**~~ **Answered 2026-09-02** — a lookup order:
+   `*-rules` skill, then `CLAUDE.md`, then ask. See `decisions.md`.
 2. **Learn's write mechanism.** The destinations are decided; how a session actually proposes a
    rule and gets it approved is not.
 3. **What "test coverage around test cases" means.** Raised but never pinned down — coverage
    thresholds as a gate, or something else.
 4. **Whether `auto --all` is ever wanted.** Currently answered by `/goal` typed by hand. If that
    proves awkward in practice, revisit.
-5. **Marketplace layout.** Single plugin with five skills, or several plugins. Single is assumed;
-   not tested against `claude plugin validate`.
+5. ~~**Marketplace layout.**~~ **Answered 2026-09-02** — single plugin, seven skills.
+   `claude plugin validate` passes.
+
+6. **Whether the TDD gate actually binds.** It is written as a discipline rule with a
+   rationalization table, but it has not been pressure-tested against a subagent, and the
+   coverage table's defaults are a guess. This is Q3 restated as something falsifiable.
+
+7. **Whether the Codex / Cursor / Gemini manifests work.** Written from superpowers' shapes,
+   never installed on those runtimes.

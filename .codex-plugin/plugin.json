@@ -1,0 +1,40 @@
+{
+  "name": "vibe-architect",
+  "version": "0.1.0",
+  "description": "Portable issue-to-PR pipeline skills: ship, auto, clean, plus graph-powered navigation helpers",
+  "author": {
+    "name": "Kunjan Dalal",
+    "email": "kunjee17@gmail.com",
+    "url": "https://github.com/kunjee17"
+  },
+  "homepage": "https://github.com/kunjee17/vibe-architect",
+  "repository": "https://github.com/kunjee17/vibe-architect",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "issue-to-pr",
+    "tdd",
+    "code-review",
+    "github",
+    "skills"
+  ],
+  "skills": "./skills/",
+  "hooks": {},
+  "interface": {
+    "displayName": "Vibe Architect",
+    "shortDescription": "Issue-to-PR pipeline: ship, auto, clean",
+    "longDescription": "Takes a numbered GitHub issue through investigate, build (test-first), verify, deploy and learn, stopping at an open pull request. Project rules stay in the repo; the workflow travels.",
+    "developerName": "Kunjan Dalal",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Ship issue #123.",
+      "Pick the next easy issue and start on it."
+    ],
+    "websiteURL": "https://github.com/kunjee17/vibe-architect"
+  }
+}

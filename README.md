@@ -3,8 +3,9 @@
 Portable Claude Code skills for the issue-to-PR pipeline, extracted from the per-project
 `kl-ship` / `pi-ship` / `nv-ship` skills that had drifted into three copies of the same thing.
 
-**Status: design only.** Nothing is implemented. The docs in `docs/` are the first cut;
-no skill has been written yet.
+**Status: v0.1.0 — the ship pipeline is written, not yet proven.** `ship`, `auto` and
+`clean` exist, plus four graph-navigation helpers. Nothing has shipped a real issue through
+them yet, and the local `*-ship` skills are still untouched.
 
 ## Why this exists
 
@@ -44,7 +45,8 @@ claude plugin install vibe-architect@vibe-architect
 | `gh` | **Hard** | Issue fetch, PR creation. Must be authenticated. |
 | `git` | **Hard** | |
 | `obsidian` CLI | **Soft** | `~/.local/bin/obsidian`. Adds graph queries to the second-brain vault but **requires the Obsidian app to be running**. Never architect around it — plain `Grep`/`Read` over `~/Workspace/secondbrain/` works headless and in cron. Not `obs`, which is OBS Studio. |
-| `superpowers` plugin | **Hard** | These skills compose it rather than reimplement it. |
+| `superpowers` plugin | **Hard** | These skills compose it rather than reimplement it. Not bundled and not auto-installable — plugin manifests have no dependency field. `ship` checks for it in Stage 0 and tells you which stages degrade without it. Install: `claude plugin install superpowers@claude-plugins-official` |
+| code-review-graph MCP | **Soft** | Structural navigation. Without it, `ship` Stage 1.3 falls back to symbol tools, then grep. The four helper skills need it outright. |
 
 ## `/goal` must be typed by you
 
@@ -68,15 +70,42 @@ that starts a nested session — noted, not built on in v1.
 | chew the whole milestone | `/goal` — built-in, condition-driven |
 | nightly / interval | `/loop`, `/schedule` — time-driven |
 
-## Planned skills
+## Skills
 
 | Skill | Status | Replaces |
 |---|---|---|
-| `ship` | planned | Part B of `kl-ship` / `pi-ship` / `nv-ship` |
-| `auto` | planned | `pi-auto`, `nv-auto` — selection only |
-| `clean` | planned | `kl-clean`, `pi-clean`, `nv-clean` |
+| `ship` | **written** | Part B of `kl-ship` / `pi-ship` / `nv-ship` |
+| `auto` | **written** | `pi-auto`, `nv-auto` — selection only |
+| `clean` | **written** | `kl-clean`, `pi-clean`, `nv-clean` |
+| `explore-codebase` | **written** | identical copies in pi_dx + k_lawyer |
+| `debug-issue` | **written** | identical copies in pi_dx + k_lawyer |
+| `review-changes` | **written** | identical copies in pi_dx + k_lawyer |
+| `refactor-safely` | **written** | identical copies in pi_dx + k_lawyer |
 | `adr-compact` | planned | nothing — new |
 | `doc-scaffold` | planned | nothing — new |
+
+The four helpers were found during extraction, not in the original survey: they are
+byte-identical between pi_dx and k_lawyer apart from a five-line token-efficiency block.
+
+## Where project rules come from
+
+`ship` carries no project rules. Stage 0 loads them from the repo you are standing in,
+taking the first that exists:
+
+1. `.claude/skills/*-rules/SKILL.md` — a rules-only project skill
+2. `CLAUDE.md` / `AGENTS.md` at the repo root, plus nested ones for touched directories
+3. Neither → stop and ask
+
+So migration is: rename `kl-ship` → `kl-rules`, delete its Part B, keep Part A. Until then
+the `CLAUDE.md` fallback means `ship` works in every repo today with no changes.
+
+## Other runtimes
+
+The skill bodies name MCP tools and CLI commands, never a specific harness's built-ins, so
+they port. Manifests ship for Claude Code (`.claude-plugin/`), Codex (`.codex-plugin/`),
+Cursor (`.cursor-plugin/`) and Gemini CLI (`gemini-extension.json`) — all pointing at the
+same `skills/` directory. Codex, Copilot CLI and Gemini CLI also read `~/.agents/skills/`,
+so a symlink works without any plugin system at all.
 
 Not built, deliberately — see `docs/decisions.md`:
 

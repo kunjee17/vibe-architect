@@ -105,15 +105,20 @@ byte-identical between pi_dx and k_lawyer apart from a five-line token-efficienc
 
 ## Where project rules come from
 
-`ship` carries no project rules. Stage 0 loads them from the repo you are standing in,
-taking the first that exists:
+`ship` carries no project rules. Stage 0 reads `docs/MANIFEST.md` — generated
+from each doc's `governs:` frontmatter — and routes the change to the docs
+that govern it.
 
-1. `.claude/skills/*-rules/SKILL.md` — a rules-only project skill
-2. `CLAUDE.md` / `AGENTS.md` at the repo root, plus nested ones for touched directories
-3. Neither → stop and ask
+**There is no fallback.** With no manifest, `ship` and `auto` stop and hand
+off to `/doc-scaffold`. Project rules were measured to be missing from every
+`CLAUDE.md` they were supposed to live in, so a degraded mode would only
+guess more confidently.
 
-So migration is: rename `kl-ship` → `kl-rules`, delete its Part B, keep Part A. Until then
-the `CLAUDE.md` fallback means `ship` works in every repo today with no changes.
+```bash
+/doc-scaffold           # once per repo: derive, ask, generate
+bin/build-manifest.py   # regenerate after editing a doc's governs: block
+bin/build-manifest.py --check   # drift gate, belongs in CI
+```
 
 ## Other runtimes
 

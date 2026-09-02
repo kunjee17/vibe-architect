@@ -21,7 +21,8 @@ Read `superpowers:writing-skills`. In particular:
 | Project rules — placement, schemas, build commands | the repo they describe |
 
 **This repo never encodes project-specific rules.** If a change would only be true in one
-repository, it belongs in that repository's `CLAUDE.md` or its `*-rules` skill.
+repository, it belongs in that repository's own docs, governed by `docs/MANIFEST.md`
+(produced by `/doc-scaffold`) — not in its `CLAUDE.md`.
 
 ## Runtimes
 

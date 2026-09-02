@@ -69,22 +69,36 @@ Without it, `writing-plans`, `requesting-code-review`,
 binds** — it does not depend on the plugin. Say which stages are degraded and get an
 explicit go-ahead before continuing.
 
-### 0.2 Load the project rules
+### 0.2 Load the docs manifest
 
-Load the rules for *this* repository. Take the first that exists:
+```bash
+cat docs/MANIFEST.md
+bin/build-manifest.py --check
+```
 
-1. `.claude/skills/*-rules/SKILL.md` — a rules-only project skill
-2. `CLAUDE.md` / `AGENTS.md` at the repo root, plus any nested one covering the directories
-   you are about to touch
-3. Neither exists → **STOP and ask.** Do not infer placement, schema or build commands
-   from the file tree.
+| Result | Action |
+|---|---|
+| No `docs/MANIFEST.md` | **STOP.** "No docs manifest. Run `/doc-scaffold` first." |
+| `--check` reports DRIFT | **STOP.** "Manifest is stale. Run `bin/build-manifest.py`." |
+| Current | Proceed to 0.3 |
 
-You need at minimum: where new code goes, which build/test commands gate a commit, and the
-database or schema topology if the issue touches persistence. If the rules are silent on
-something the issue needs, ask during Stage 1 — not after the plan is written.
+**There is no degraded mode.** Do not fall back to `CLAUDE.md`, do not infer
+placement from the file tree, do not proceed "just this once" because the
+issue looks small. A precondition that can be skipped is a preference, and
+this one was measured: no `CLAUDE.md` in the repos this was built from
+carries a placement table, so a warned-but-continuing run still guesses.
 
-If the repo still has a legacy combined `<prefix>-ship` skill, its Part A is the rule
-source. Ignore its Part B; this skill replaces it.
+### 0.3 Route
+
+Match the issue's likely touched paths and change shape against the
+manifest. That yields the governing docs for this change.
+
+### 0.4 Read
+
+Read the routed docs, plus `docs/decisions.md` always. A doc carrying a
+`status:` field is reported with that status — not presented as current.
+
+`CLAUDE.md` remains orientation and traps. It is not the rule source.
 
 ---
 
@@ -263,9 +277,18 @@ Style is the linter's job. **Do not flag what the linter already catches, and do
 invent findings.** A conscious trade-off with a code comment and a PR note is a PASS with
 a note, not a FAIL.
 
-**Stale docs are a note, never a FAIL.** Collect gaps ("the architecture doc does not
-mention the new actor") and offer them after PASS as a non-blocking list. The exception: a
-doc that would make the next agent write *wrong* code is a real finding. Say so.
+**Doc drift splits by kind.** The manifest declares these docs authoritative
+and Stage 0 refuses to run without them, so an authoritative doc that is
+wrong actively misdirects.
+
+- The change makes a governing doc's claim **false** → **FAIL.** Fix the doc
+  or the code, in the same commit.
+- The change does something the doc **does not mention yet** → **note**,
+  non-blocking. Offer it after PASS.
+
+A claim must be falsifiable before it can be contradicted. "Only
+`CommandActor` appends" is falsifiable. "Keep actors clean" is not — that is
+a gap at worst, never a FAIL.
 
 ### 3.2 On FAIL
 
@@ -357,7 +380,7 @@ Route by scope:
 | Kind | Destination |
 |---|---|
 | Outlives this repo — a framework, language, or architecture call | `second-brain` skill → `~/Workspace/secondbrain/` |
-| Specific to this repo — a convention, a trap, a placement rule | the repo's own docs / `CLAUDE.md` / its `*-rules` skill |
+| Specific to this repo — a convention, a trap, a placement rule | the manifest-governed doc that covers it (see `docs/MANIFEST.md`) |
 
 If the answer is nothing, that is a valid answer. Move on.
 

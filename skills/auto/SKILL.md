@@ -18,6 +18,12 @@ when the queue empties, where `/loop` would keep firing at an empty backlog.
 
 ---
 
+## Step 0 — Precondition
+
+`auto` hands to `ship`, which requires a docs manifest. If `docs/MANIFEST.md`
+is absent, stop and say: "No docs manifest — run `/doc-scaffold` before
+picking an issue." Do not rank issues you cannot then ship.
+
 ## Step 1 — List open unassigned issues
 
 ```bash
@@ -30,7 +36,7 @@ remote is ambiguous.
 
 **Drop every issue with a non-empty `assignees`.** Someone already has it.
 
-Then check the project rules (`CLAUDE.md` or the repo's `*-rules` skill) for an **execution
+Then check the docs routed by `docs/MANIFEST.md`, or `CLAUDE.md`, for an **execution
 map** — a pinned tracking issue or a playbook doc that sequences the work. If one exists,
 read it before ranking. **Sequence beats convenience**: an issue that unblocks the current
 milestone outranks a smaller one that does not.

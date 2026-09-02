@@ -1,6 +1,6 @@
 {
   "name": "vibe-architect",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Portable issue-to-PR pipeline skills: ship, auto, clean, plus graph-powered navigation helpers",
   "author": {
     "name": "Kunjan Dalal",

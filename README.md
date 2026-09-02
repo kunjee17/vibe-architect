@@ -38,6 +38,22 @@ claude plugin marketplace add kunjee17/vibe-architect
 claude plugin install vibe-architect@vibe-architect
 ```
 
+Codex and Cursor read `.codex-plugin/` and `.cursor-plugin/` from a clone. Gemini CLI reads
+`gemini-extension.json`. For any runtime with no plugin system, Codex, Copilot CLI and
+Gemini CLI all also read `~/.agents/skills/`:
+
+```bash
+git clone https://github.com/kunjee17/vibe-architect ~/src/vibe-architect
+mkdir -p ~/.agents/skills
+ln -s ~/src/vibe-architect/skills/* ~/.agents/skills/
+```
+
+**There is no npm package and there should not be one.** Every target runtime already has
+a native installer, so publishing would add a build-and-publish step and a fifth place to
+forget the version number, for zero extra reach. The version does live in five manifests
+though — `bin/check-versions.py` verifies they match, and `bin/check-versions.py 0.2.0`
+sets them all.
+
 ## Prerequisites
 
 | Dependency | Required? | Notes |

@@ -65,3 +65,37 @@ prohibition arm trended worse than the no-guidance control.
   cited the `init` skill's warning against filler. This is arguably the correct
   condition to measure, since `doc-scaffold` will also run alongside other
   skills — but it is not the clean control the method asks for.
+
+## With-skill results — 2026-09-02 (GREEN)
+
+Same fixture reset to no-docs, same prompt, skill available.
+
+| | Baseline | With skill |
+|---|---|---|
+| `docs/` artifacts | 0 | 4 (architecture, product, decisions, MANIFEST) |
+| `governs:` frontmatter | none | on all three source docs |
+| `build-manifest.py --check` | n/a | `ok - manifest is current`, exit 0 |
+| Questions asked | 0 | 4, one at a time |
+| Sections left "not recorded" | n/a | 4, explicitly |
+
+Generated routing:
+
+| Doc | Paths | Shapes | Verify |
+|---|---|---|---|
+| `architecture.md` | `src/api/**`, `src/core/**` | placement | source |
+| `decisions.md` | — | decisions | source |
+| `product.md` | — | product | **ask** |
+
+**The honesty rule held under real pressure.** The run had every opportunity to
+invent a plausible rationale for a repo named `orderflow` and instead left both
+`product.md` sections as "not recorded", plus the architecture Traps section and
+the empty ADR log. It also carried the derived/asked split correctly: the
+placement table cites the file each entry was quoted from, and it flagged that
+`build`, `lint` and `seed` reference files absent from the tree.
+
+`product.md` correctly received `verify: ask`, so `doc-refresh` (Plan 2) will
+know it can never be checked against the source tree.
+
+**No new loophole appeared, so no REFACTOR iteration was needed.** Verified by
+the controller re-running `--check` and inspecting every artifact, rather than
+accepting the run's own report.
